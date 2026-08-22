@@ -5,7 +5,7 @@ on:
       docker_images:
         description: '请填写docker镜像名称 多个用英文逗号分开'
         required: true
-        default: 'alpine:latest,busybox:stable-glibc'  # 设置默认的 Docker 镜像列表
+        default: 'alpine:latest,busybox:stable-glibc'
 
 jobs:
   pull_and_package:
@@ -13,29 +13,29 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5  # 【修改】从 v4 升级到 v5 以适配 Node.js 24
 
     - name: Clean up Docker to free space
       run: |
-          docker system prune -a -f
-          docker volume prune -f
+        docker system prune -a -f
+        docker volume prune -f
 
     - name: Pull Docker Images and Package
       run: |
         images="${{ github.event.inputs.docker_images }}"
-          IFS=',' read -r -a image_array <<< "$images"
-          for image in "${image_array[@]}"; do
-            docker pull "${image}" --platform "linux/amd64"
-            image_name="${image//\//_}"
-            image_name="${image_name//:/_}"
-            docker save "${image}" -o "${image_name}-amd64.tar"
-            gzip -c "${image_name}-amd64.tar" > "${image_name}-amd64.tar.gz"
-            rm "${image_name}-amd64.tar"
-          done
+        IFS=',' read -r -a image_array <<< "$images"
+        for image in "${image_array[@]}"; do
+          docker pull "${image}" --platform "linux/amd64"
+          image_name="${image//\//_}"
+          image_name="${image_name//:/_}"
+          docker save "${image}" -o "${image_name}-amd64.tar"
+          gzip -c "${image_name}-amd64.tar" > "${image_name}-amd64.tar.gz"
+          rm "${image_name}-amd64.tar"
+        done
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5  # 【修改】从 v4 升级到 v5 以适配 Node.js 24
       with:
         name: my-artifact
         path: ${{ github.workspace }}/*.tar.gz
-        retention-days: 1  # 将保留天数设置为 1 天 最多可设置90天
+        retention-days: 1
